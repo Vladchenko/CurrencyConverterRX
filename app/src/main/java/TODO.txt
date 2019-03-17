@@ -1,0 +1,11 @@
+
+    Should a UI really be simple ?
+
+        Mandatory:
+    - TODO Add Material Design
+    - TODO JUnit
+    - TODO Once saving to file is done, check if its ok, unless - show a toast.
+
+        Optional:
+    - TODO When one selects a currency, the other should not be the same.
+    - TODO Add MVP

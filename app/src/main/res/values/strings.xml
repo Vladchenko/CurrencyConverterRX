@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">CurrencyConverter</string>
+    <string name="quotation_default_value">00.0000</string>
+    <string name="column1_title_text">Currency amount</string>
+    <string name="column2_title_text">Nominal</string>
+    <string name="column3_title_text">Quotation</string>
+    <string name="wrong_URL">URL is incorrect!</string>
+    <string name="wrong_file">"Filepath is incorrect!, program terminated."</string>
+    <string name="progress_dialog_title_text">"Downloading currencies"</string>
+    <string name="progress_dialog_message_text">"Please wait for a currencies quotations to download from web."</string>
+    <string name="web_downloading_failed">"Currencies web downloading failed, cache file is used"</string>
+    <string name="web_and_file_downloading_failed">"Currencies web and file downloading failed -
+        restart the app. Make sure the internet connection is ON the next time"</string>
+    <string name="web_downloading_success">"Currencies loaded from a web"</string>
+    <string name="same_currencies">"Currencies match, change one of them"</string>
+    <string name="currency_amount_absent">"Currency amount is absent"</string>
+    <string name="currency_is_wrong">"Wrong currency value"</string>
+    <string name="currency_is_not_available">"n/a"</string>
+</resources>

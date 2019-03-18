@@ -2,8 +2,6 @@ package com.example.vladislav.currencyconverter.datasource;
 
 import android.support.annotation.VisibleForTesting;
 
-import com.example.vladislav.currencyconverter.XMLParser;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;

@@ -22,7 +22,7 @@ public class Currencies {
     public String getDate() {return this.date;}
     public void setDate(String value) {this.date = value;}
 
-    public Currency getValute() {return this.valute;}
+    public Currency getCurrency() {return this.valute;}
     public void setValute(Currency value) {this.valute = value;}
 
     @Element(name="Valute")
@@ -65,5 +65,4 @@ public class Currencies {
         public void setName(String value) {this.name = value;}
 
     }
-
 }

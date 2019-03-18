@@ -25,7 +25,6 @@ public class CurrenciesDeserializer {
         CurrenciesContainer currenciesContainer;
         Serializer serializer = new Persister();
         currenciesContainer = serializer.read(CurrenciesContainer.class, inputStream);
-        sLog.log(Level.INFO, "Deserialized from file: " + Consts.getCurrenciesFile());
 
         return currenciesContainer;
     }

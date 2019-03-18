@@ -4,6 +4,8 @@
     <string name="column1_title_text">Currency amount</string>
     <string name="column2_title_text">Nominal</string>
     <string name="column3_title_text">Quotation</string>
+    <string name="convert_text">Convert</string>
+    <string name="retry_text">Retry</string>
     <string name="wrong_URL">URL is incorrect!</string>
     <string name="wrong_file">"Filepath is incorrect!, program terminated."</string>
     <string name="progress_dialog_title_text">"Downloading currencies"</string>
@@ -16,4 +18,5 @@
     <string name="currency_amount_absent">"Currency amount is absent"</string>
     <string name="currency_is_wrong">"Wrong currency value"</string>
     <string name="currency_is_not_available">"n/a"</string>
+    <string name="currencies_downloading_failed">"Currencies could not be loaded"</string>
 </resources>

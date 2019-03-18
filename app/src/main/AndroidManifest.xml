@@ -20,10 +20,6 @@
             </intent-filter>
         </activity>
 
-        <service
-            android:name=".datasource.CurrenciesHandlingService"
-            android:exported="false"></service>
-
     </application>
 
 </manifest>

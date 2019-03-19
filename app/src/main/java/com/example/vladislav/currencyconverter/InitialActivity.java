@@ -3,6 +3,8 @@ package com.example.vladislav.currencyconverter;
 import android.app.Activity;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -35,6 +37,8 @@ import io.reactivex.schedulers.Schedulers;
  */
 public class InitialActivity extends Activity {
 
+    private final String mUrl = "http://www.cbr.ru/scripts/XML_daily.asp";
+
     // Position of a USD currency in a currencies spinner's list
     private final int USD_POSITION = 10;
     // Position of a RUB currency in a currencies spinner's list
@@ -61,7 +65,7 @@ public class InitialActivity extends Activity {
         mResources = getResources();
         setContentView(R.layout.initial_activity);
 
-        if (!CommonUtils.isURLValid(Consts.getUrl())) {
+        if (!CommonUtils.isURLValid(mUrl)) {
             Log.e(getClass().getCanonicalName(), mResources.getString(R.string.wrong_URL));
             return;
         }
@@ -69,6 +73,7 @@ public class InitialActivity extends Activity {
         mCurrenciesContainer = new CurrenciesContainer();
 
         findViews();
+        setInitialCurrencyClickListener();
 
         mProgressBar.setVisibility(View.VISIBLE);
         mConvertButton.setVisibility(View.GONE);
@@ -82,7 +87,7 @@ public class InitialActivity extends Activity {
                 emitter -> {
                     Thread thread = new Thread(() -> {
                         try {
-                            InputStream inputStream = new CurrencyDownloader(Consts.getUrl()).getStreamFromUrl();
+                            InputStream inputStream = new CurrencyDownloader(mUrl).getStreamFromUrl();
                             mCurrenciesContainer = new CurrenciesDeserializer().parse(inputStream);
                             emitter.onSuccess(mCurrenciesContainer);
                         } catch (Exception e) {
@@ -136,6 +141,18 @@ public class InitialActivity extends Activity {
         mResultingCurrencySpinner = (Spinner) findViewById(R.id.resulting_currency_spinner);
     }
 
+    private void convertCurrency() {
+        String operationResult = CurrencyConverter.convertCurrency(
+                Double.parseDouble(mInitialCurrencyEditText.getText().toString()),
+                Double.parseDouble(mCurrenciesContainer.getCurrenciesList()
+                        .get(mInitialCurrencySpinner.getSelectedItemPosition())
+                        .getValue().replace(',', '.')),
+                Double.parseDouble(mCurrenciesContainer.getCurrenciesList()
+                        .get(mResultingCurrencySpinner.getSelectedItemPosition())
+                        .getValue().replace(',', '.')));
+        mResultingCurrencyEditText.setText(operationResult);
+    }
+
     private void initializeConvertButton() {
         Button convertButton = (Button) findViewById(R.id.convert_button);
         convertButton.setOnClickListener(new View.OnClickListener() {
@@ -150,15 +167,7 @@ public class InitialActivity extends Activity {
                         // Perform calculation only if an amount to be converted is present in a respective text_edit.
                         if (!mInitialCurrencyEditText.getText().toString().isEmpty()) {
                             try {
-                                String operationResult = CurrencyConverter.convertCurrency(
-                                        Double.parseDouble(mInitialCurrencyEditText.getText().toString()),
-                                        Double.parseDouble(mCurrenciesContainer.getCurrenciesList()
-                                                .get(mInitialCurrencySpinner.getSelectedItemPosition())
-                                                .getValue().replace(',', '.')),
-                                        Double.parseDouble(mCurrenciesContainer.getCurrenciesList()
-                                                .get(mResultingCurrencySpinner.getSelectedItemPosition())
-                                                .getValue().replace(',', '.')));
-                                mResultingCurrencyEditText.setText(operationResult);
+                                convertCurrency();
                             } catch (ArithmeticException | NumberFormatException ex) {
                                 mResultingCurrencyEditText.setText(mResources.getString(
                                         R.string.currency_is_not_available));
@@ -187,6 +196,29 @@ public class InitialActivity extends Activity {
         currencyBean.setNumericCode(643);
         currencyBean.setValue("1");
         return currencyBean;
+    }
+
+    private void setInitialCurrencyClickListener() {
+        mInitialCurrencyEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                // Not needed
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                // Not needed
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                if (mInitialCurrencyEditText.length() > 0) {
+                    convertCurrency();
+                } else {
+                    mResultingCurrencyEditText.setText("");
+                }
+            }
+        });
     }
 
     private void submitCurrenciesCharCodesToSpinners() {
@@ -257,6 +289,11 @@ public class InitialActivity extends Activity {
                 swapperText = mInitialCurrencyTextView.getText().toString();
                 mInitialCurrencyTextView.setText(mResultingCurrencyTextView.getText());
                 mResultingCurrencyTextView.setText(swapperText);
+                if (mInitialCurrencyEditText.getText().length() > 0) {
+                    convertCurrency();
+                } else {
+                    mResultingCurrencyEditText.setText("");
+                }
             }
         });
     }

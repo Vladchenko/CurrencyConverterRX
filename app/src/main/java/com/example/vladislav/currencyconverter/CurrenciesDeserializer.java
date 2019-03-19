@@ -14,12 +14,10 @@ import java.util.logging.Logger;
 import static java.util.logging.Logger.getLogger;
 
 /**
- * Uploading, parsing and deserializing the currencies data into java beans.
+ * Uploading, parsing and deserializing the currencies data into beans.
  */
 
 public class CurrenciesDeserializer {
-
-    private static Logger sLog = getLogger(CurrenciesHandler.class.getName());
 
     public CurrenciesContainer parse(InputStream inputStream) throws Exception {
         CurrenciesContainer currenciesContainer;

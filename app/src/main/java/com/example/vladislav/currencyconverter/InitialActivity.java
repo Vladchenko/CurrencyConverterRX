@@ -27,6 +27,8 @@ import java.util.List;
 
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Action;
 import io.reactivex.schedulers.Schedulers;
 
 // TODO
@@ -57,6 +59,7 @@ public class InitialActivity extends Activity {
     private ProgressBar mProgressBar;
     private Button mConvertButton;
     private Resources mResources;
+    private Disposable mSingle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,7 +76,6 @@ public class InitialActivity extends Activity {
         mCurrenciesContainer = new CurrenciesContainer();
 
         findViews();
-        setInitialCurrencyClickListener();
 
         mProgressBar.setVisibility(View.VISIBLE);
         mConvertButton.setVisibility(View.GONE);
@@ -82,8 +84,14 @@ public class InitialActivity extends Activity {
         downloadCurrencies();
     }
 
+    @Override
+    protected void onDestroy() {
+        mSingle.dispose();
+        super.onDestroy();
+    }
+
     private void downloadCurrencies() {
-        Single.create(
+        mSingle = Single.create(
                 emitter -> {
                     Thread thread = new Thread(() -> {
                         try {
@@ -95,12 +103,23 @@ public class InitialActivity extends Activity {
                         }
                     });
                     // Imitating some work by putting thread to sleep
-                    thread.sleep(2000);
+                    try {
+                        Thread.sleep(8000);
+                    } catch(InterruptedException ex) {
+                        // No point in processing this exception, since it is just sleeping might
+                        // be interrupted, but not some serious thread work
+                    }
                     thread.start();
                 }
         )
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
+                .doOnDispose(new Action() {
+                    @Override
+                    public void run() {
+                        System.out.println("Currencies downloader disposed");
+                    }
+                })
                 .subscribe(result -> handleSuccess(),
                         result -> handleError());
     }
@@ -124,6 +143,7 @@ public class InitialActivity extends Activity {
         mCurrenciesDownloadingErrorTextView.setVisibility(View.GONE);
         submitCurrenciesCharCodesToSpinners();
         setInitialCurrenciesInSpinners();
+        setInitialCurrencyClickListener();
         initializeConvertButton();
         setSwapCurrenciesButtonClickListener();
     }

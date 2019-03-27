@@ -1,15 +1,11 @@
 package com.example.vladislav.currencyconverter;
 
-import com.example.vladislav.currencyconverter.beans.CurrenciesContainer;
-import com.example.vladislav.currencyconverter.datasource.CurrenciesHandler;
+import com.example.vladislav.currencyconverter.model.beans.CurrenciesContainer;
 
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 
-import java.io.File;
 import java.io.InputStream;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static java.util.logging.Logger.getLogger;
 

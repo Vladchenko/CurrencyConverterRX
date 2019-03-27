@@ -1,4 +1,4 @@
-package com.example.vladislav.currencyconverter;
+package com.example.vladislav.currencyconverter.view;
 
 import android.app.Activity;
 import android.content.res.Resources;
@@ -16,20 +16,21 @@ import android.widget.Spinner;
 import android.widget.TableLayout;
 import android.widget.TextView;
 
-import com.example.vladislav.currencyconverter.beans.CurrenciesContainer;
-import com.example.vladislav.currencyconverter.beans.CurrencyBean;
-import com.example.vladislav.currencyconverter.datasource.CurrencyDownloader;
+import com.example.vladislav.currencyconverter.CommonUtils;
+import com.example.vladislav.currencyconverter.R;
+import com.example.vladislav.currencyconverter.di.CurrencyComponent;
+import com.example.vladislav.currencyconverter.di.CurrencyModule;
+import com.example.vladislav.currencyconverter.di.DaggerCurrencyComponent;
+import com.example.vladislav.currencyconverter.model.beans.CurrenciesContainer;
+import com.example.vladislav.currencyconverter.model.beans.CurrencyBean;
 import com.example.vladislav.currencyconverter.logic.CurrencyConverter;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.reactivex.Single;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Action;
-import io.reactivex.schedulers.Schedulers;
+import com.example.vladislav.currencyconverter.presenter.CurrencyPresenter;
+
+import javax.inject.Inject;
 
 // TODO
 // 3. Make a methods smaller
@@ -37,7 +38,10 @@ import io.reactivex.schedulers.Schedulers;
 /**
  * Holds the presentation and logic layer for the app.
  */
-public class InitialActivity extends Activity {
+public class InitialActivity extends Activity implements CurrenciesView {
+
+    @Inject
+    CurrencyPresenter mCurrencyPresenter;
 
     private final String mUrl = "http://www.cbr.ru/scripts/XML_daily.asp";
 
@@ -45,8 +49,10 @@ public class InitialActivity extends Activity {
     private final int USD_POSITION = 10;
     // Position of a RUB currency in a currencies spinner's list
     private final int RUB_POSITION = 0;
-    private boolean mDownloadStatus = true;
 
+    private static CurrencyComponent mComponent;
+
+    private boolean mDownloadStatus = true;
     private CurrenciesContainer mCurrenciesContainer;
     private Spinner mInitialCurrencySpinner;        // Spinner for a initial currency (to convert from);
     private Spinner mResultingCurrencySpinner;      // Spinner for a resulting currency  (to convert to);
@@ -59,12 +65,18 @@ public class InitialActivity extends Activity {
     private ProgressBar mProgressBar;
     private Button mConvertButton;
     private Resources mResources;
-    private Disposable mSingle;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
+
+        mComponent = DaggerCurrencyComponent.builder()
+                .currencyModule(new CurrencyModule(this))
+                .build();
+        mComponent.inject(this);
+
         mResources = getResources();
         setContentView(R.layout.initial_activity);
 
@@ -74,67 +86,18 @@ public class InitialActivity extends Activity {
         }
 
         mCurrenciesContainer = new CurrenciesContainer();
+//        mCurrencyPresenter = new CurrencyPresenterImpl(this);
 
         findViews();
 
         mProgressBar.setVisibility(View.VISIBLE);
         mConvertButton.setVisibility(View.GONE);
         mCurrenciesDownloadingErrorTextView.setVisibility(View.GONE);
-
-        downloadCurrencies();
     }
 
     @Override
-    protected void onDestroy() {
-        mSingle.dispose();
-        super.onDestroy();
-    }
-
-    private void downloadCurrencies() {
-        mSingle = Single.create(
-                emitter -> {
-                    Thread thread = new Thread(() -> {
-                        try {
-                            InputStream inputStream = new CurrencyDownloader(mUrl).getStreamFromUrl();
-                            mCurrenciesContainer = new CurrenciesDeserializer().parse(inputStream);
-                            emitter.onSuccess(mCurrenciesContainer);
-                        } catch (Exception e) {
-                            emitter.onError(e);
-                        }
-                    });
-                    // Imitating some work by putting thread to sleep
-                    try {
-                        Thread.sleep(8000);
-                    } catch(InterruptedException ex) {
-                        // No point in processing this exception, since it is just sleeping might
-                        // be interrupted, but not some serious thread work
-                    }
-                    thread.start();
-                }
-        )
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnDispose(new Action() {
-                    @Override
-                    public void run() {
-                        System.out.println("Currencies downloader disposed");
-                    }
-                })
-                .subscribe(result -> handleSuccess(),
-                        result -> handleError());
-    }
-
-    public void handleError() {
-        mDownloadStatus = false;
-        mProgressBar.setVisibility(View.GONE);
-        mCurrenciesDownloadingErrorTextView.setText(R.string.currencies_downloading_failed);
-        mCurrenciesDownloadingErrorTextView.setVisibility(View.VISIBLE);
-        initializeConvertButton();
-        mConvertButton.setText(R.string.retry_text);
-        mConvertButton.setVisibility(View.VISIBLE);
-    }
-
-    private void handleSuccess() {
+    public void displayCurrencies(CurrenciesContainer currenciesContainer) {
+        mCurrenciesContainer = currenciesContainer;
         mDownloadStatus = true;
         mConvertButton.setText(R.string.convert_text);
         mProgressBar.setVisibility(View.GONE);
@@ -146,6 +109,17 @@ public class InitialActivity extends Activity {
         setInitialCurrencyClickListener();
         initializeConvertButton();
         setSwapCurrenciesButtonClickListener();
+    }
+
+    @Override
+    public void displayError() {
+        mDownloadStatus = false;
+        mProgressBar.setVisibility(View.GONE);
+        mCurrenciesDownloadingErrorTextView.setText(R.string.currencies_downloading_failed);
+        mCurrenciesDownloadingErrorTextView.setVisibility(View.VISIBLE);
+        initializeConvertButton();
+        mConvertButton.setText(R.string.retry_text);
+        mConvertButton.setVisibility(View.VISIBLE);
     }
 
     private void findViews() {
@@ -200,7 +174,7 @@ public class InitialActivity extends Activity {
                         }
                     }
                 } else {
-                    downloadCurrencies();
+                    mCurrencyPresenter.provideCurrencies();
                 }
             }
         });
@@ -256,7 +230,7 @@ public class InitialActivity extends Activity {
 
         setListenersToSpinners();
 
-        currenciesAdapter = new ArrayAdapter<String>(getApplicationContext(),
+        currenciesAdapter = new ArrayAdapter<>(getApplicationContext(),
                 R.layout.item_spinner, charCodeList);
         currenciesAdapter.setDropDownViewResource(R.layout.item_spinner);
         mInitialCurrencySpinner.setAdapter(currenciesAdapter);
@@ -298,22 +272,19 @@ public class InitialActivity extends Activity {
 
     private void setSwapCurrenciesButtonClickListener() {
         Button swapButton = (Button) findViewById(R.id.swap_button);
-        swapButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                int swapperPosition;
-                String swapperText;
-                swapperPosition = mInitialCurrencySpinner.getSelectedItemPosition();
-                mInitialCurrencySpinner.setSelection(mResultingCurrencySpinner.getSelectedItemPosition());
-                mResultingCurrencySpinner.setSelection(swapperPosition);
-                swapperText = mInitialCurrencyTextView.getText().toString();
-                mInitialCurrencyTextView.setText(mResultingCurrencyTextView.getText());
-                mResultingCurrencyTextView.setText(swapperText);
-                if (mInitialCurrencyEditText.getText().length() > 0) {
-                    convertCurrency();
-                } else {
-                    mResultingCurrencyEditText.setText("");
-                }
+        swapButton.setOnClickListener(v -> {
+            int swapperPosition;
+            String swapperText;
+            swapperPosition = mInitialCurrencySpinner.getSelectedItemPosition();
+            mInitialCurrencySpinner.setSelection(mResultingCurrencySpinner.getSelectedItemPosition());
+            mResultingCurrencySpinner.setSelection(swapperPosition);
+            swapperText = mInitialCurrencyTextView.getText().toString();
+            mInitialCurrencyTextView.setText(mResultingCurrencyTextView.getText());
+            mResultingCurrencyTextView.setText(swapperText);
+            if (mInitialCurrencyEditText.getText().length() > 0) {
+                convertCurrency();
+            } else {
+                mResultingCurrencyEditText.setText("");
             }
         });
     }

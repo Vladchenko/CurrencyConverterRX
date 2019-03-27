@@ -12,7 +12,7 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:theme="@style/Theme.AppCompat.Light"
-    tools:context="com.example.vladislav.currencyconverter.InitialActivity">
+    tools:context="com.example.vladislav.currencyconverter.view.InitialActivity">
 
     <ProgressBar
         android:id="@+id/currencies_progressBar"

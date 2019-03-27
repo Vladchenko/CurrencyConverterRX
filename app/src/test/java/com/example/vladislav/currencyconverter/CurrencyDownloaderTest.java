@@ -1,10 +1,9 @@
 package com.example.vladislav.currencyconverter;
 
-import com.example.vladislav.currencyconverter.datasource.CurrencyDownloader;
+import com.example.vladislav.currencyconverter.model.datasource.CurrencyDownloader;
 
 import org.junit.Test;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 /**

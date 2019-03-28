@@ -3,6 +3,7 @@ package com.example.vladislav.currencyconverter.view;
 import android.app.Activity;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatDelegate;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -72,6 +73,8 @@ public class InitialActivity extends Activity implements CurrenciesView {
 
         super.onCreate(savedInstanceState);
 
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+
         mComponent = DaggerCurrencyComponent.builder()
                 .currencyModule(new CurrencyModule(this))
                 .build();
@@ -86,7 +89,6 @@ public class InitialActivity extends Activity implements CurrenciesView {
         }
 
         mCurrenciesContainer = new CurrenciesContainer();
-//        mCurrencyPresenter = new CurrencyPresenterImpl(this);
 
         findViews();
 

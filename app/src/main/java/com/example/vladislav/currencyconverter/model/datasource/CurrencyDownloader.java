@@ -1,4 +1,4 @@
-package com.example.vladislav.currencyconverter.datasource;
+package com.example.vladislav.currencyconverter.model.datasource;
 
 import android.support.annotation.VisibleForTesting;
 
@@ -22,11 +22,10 @@ import static java.util.logging.Logger.getLogger;
 
 public class CurrencyDownloader {
 
-    private static InputStream stream = null;
     private String mUrl = null;
     private static Logger log = getLogger(CurrencyDownloader.class.getName());
 
-    public CurrencyDownloader(String Url) throws IOException {
+    public CurrencyDownloader(String Url) {
         mUrl = Url;
     }
 

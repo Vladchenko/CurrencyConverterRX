@@ -1,4 +1,4 @@
-package com.example.vladislav.currencyconverter.datasource;
+package com.example.vladislav.currencyconverter.model.datasource;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
